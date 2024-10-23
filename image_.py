@@ -4,6 +4,7 @@ import torch
 from transformers import AutoImageProcessor, AutoModelForImageClassification
 from datetime import datetime
 from typing import Dict, List, Any
+from functools import lru_cache
 
 NUTRITION_DB = {
     "pizza": {
@@ -32,16 +33,17 @@ NUTRITION_DB = {
     }
 }
 
+@st.cache_resource
+def load_model():
+    """Load and cache the model"""
+    processor = AutoImageProcessor.from_pretrained("nateraw/food")
+    model = AutoModelForImageClassification.from_pretrained("nateraw/food")
+    return processor, model
+
 class FoodAnalyzer:
     def __init__(self):
-        self.processor, self.model = self._load_model()
+        self.processor, self.model = load_model()
         self.nutrition_db = NUTRITION_DB
-
-    @st.cache_resource
-    def _load_model(self):
-        processor = AutoImageProcessor.from_pretrained("nateraw/food")
-        model = AutoModelForImageClassification.from_pretrained("nateraw/food")
-        return processor, model
 
     def analyze_image(self, image: Image.Image) -> Dict[str, float]:
         inputs = self.processor(image, return_tensors="pt")
