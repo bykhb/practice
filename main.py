@@ -11,12 +11,12 @@ import sys
 from pathlib import Path
 
 # Your existing NUTRITION_DB and classes (FoodAnalyzer, etc.) go here...
-
 PAGES = {
     "🏠 Home": "Home",
-    "🔍 Analyzer": "Analyzer",
-    "📊 History": "History",
-    "💡 Tips": "Tips"
+    "📸 Food Scan": "Food_Scan",
+    "📊 Scan History": "Scan_History",
+    "💡 Food Consultant": "Food_Consultant",
+    "💬 Slack": "Slack"
 }
 
 def main():
