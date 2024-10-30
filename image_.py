@@ -1,111 +1,25 @@
+# pages/Home.py
+import streamlit as st
+
+def show():
+    st.title("🏠 Food Analyzer Home")
+    st.write("Welcome to the Food Analyzer! Upload food images to get nutritional analysis.")
+    st.write("### Features:")
+    st.write("- 📸 Image Recognition")
+    st.write("- 🍎 Nutritional Analysis")
+    st.write("- 📊 Historical Tracking")
+    st.write("- 💡 Personalized Tips")
+
+# pages/Analyzer.py
 import streamlit as st
 from PIL import Image
 import torch
 from transformers import AutoImageProcessor, AutoModelForImageClassification
 from datetime import datetime
 from typing import Dict, List, Any
-from functools import lru_cache
 
-NUTRITION_DB = {
-    "pizza": {
-        "calories": 285,
-        "protein": 12,
-        "carbs": 36,
-        "fat": 10,
-        "vitamins": ["B12", "D"],
-        "tips": ["Consider thin crust", "Add vegetables", "Limit to 2 slices"]
-    },
-    "salad": {
-        "calories": 100,
-        "protein": 3,
-        "carbs": 12,
-        "fat": 7,
-        "vitamins": ["A", "C", "K"],
-        "tips": ["Add lean protein", "Use olive oil dressing", "Include colorful vegetables"]
-    },
-    "burger": {
-        "calories": 354,
-        "protein": 20,
-        "carbs": 29,
-        "fat": 17,
-        "vitamins": ["B12", "Iron"],
-        "tips": ["Choose whole grain bun", "Add vegetables", "Consider plant-based options"]
-    }
-}
-
-@st.cache_resource
-def load_model():
-    """Load and cache the model"""
-    processor = AutoImageProcessor.from_pretrained("nateraw/food")
-    model = AutoModelForImageClassification.from_pretrained("nateraw/food")
-    return processor, model
-
-class FoodAnalyzer:
-    def __init__(self):
-        self.processor, self.model = load_model()
-        self.nutrition_db = NUTRITION_DB
-
-    def analyze_image(self, image: Image.Image) -> Dict[str, float]:
-        inputs = self.processor(image, return_tensors="pt")
-        
-        with torch.no_grad():
-            outputs = self.model(**inputs)
-            
-        probs = torch.nn.functional.softmax(outputs.logits, dim=-1)[0]
-        top_probs, top_ids = torch.topk(probs, 3)
-        
-        return {
-            self.model.config.id2label[id.item()]: prob.item()
-            for id, prob in zip(top_ids, top_probs)
-        }
-
-    def get_nutrition_info(self, food_items: Dict[str, float]) -> Dict[str, Dict]:
-        return {
-            food: {**self.nutrition_db[food], "confidence": conf}
-            for food, conf in food_items.items()
-            if food in self.nutrition_db
-        }
-
-    def get_nutrition_summary(self, nutrition_info: Dict[str, Dict]) -> Dict[str, Any]:
-        totals = {
-            "calories": sum(food["calories"] for food in nutrition_info.values()),
-            "protein": sum(food["protein"] for food in nutrition_info.values()),
-            "carbs": sum(food["carbs"] for food in nutrition_info.values()),
-            "fat": sum(food["fat"] for food in nutrition_info.values())
-        }
-        
-        tips = [tip for food in nutrition_info.values() for tip in food["tips"]]
-        vitamins = {v for food in nutrition_info.values() for v in food["vitamins"]}
-        
-        return {
-            "totals": totals,
-            "tips": list(set(tips)),
-            "vitamins": sorted(vitamins)
-        }
-
-def display_results(detected_foods: Dict[str, float], nutrition_summary: Dict[str, Any]):
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.subheader("🎯 Detection Results")
-        for food, conf in detected_foods.items():
-            st.metric(label=food.title(), value=f"{conf:.1%}")
-        
-        st.subheader("📊 Nutrition Totals")
-        for nutrient, value in nutrition_summary["totals"].items():
-            st.metric(label=nutrient.title(), value=f"{value}{'g' if nutrient != 'calories' else ''}")
-    
-    with col2:
-        st.subheader("🌟 Vitamins")
-        st.write(", ".join(nutrition_summary["vitamins"]) if nutrition_summary["vitamins"] else "No data")
-        
-        st.subheader("✨ Tips")
-        for i, tip in enumerate(nutrition_summary["tips"], 1):
-            st.write(f"{i}. {tip}")
-
-def main():
-    st.set_page_config(page_title="Food Analyzer", page_icon="🥗", layout="wide")
-    st.title("🥗 Food Analyzer")
+def show():
+    st.title("🔍 Food Analysis")
     
     if 'history' not in st.session_state:
         st.session_state.history = []
@@ -131,14 +45,98 @@ def main():
             })
         
         display_results(detected_foods, nutrition_summary)
+
+# pages/History.py
+import streamlit as st
+from datetime import datetime
+
+def show():
+    st.title("📊 Analysis History")
     
-    with st.sidebar:
-        st.header("📊 History")
-        for entry in st.session_state.history[-5:]:
-            with st.expander(entry["datetime"]):
-                st.image(entry["image"], width=100)
+    if 'history' not in st.session_state:
+        st.session_state.history = []
+        
+    if not st.session_state.history:
+        st.info("No analysis history yet. Try analyzing some food images!")
+        return
+        
+    for entry in st.session_state.history:
+        with st.expander(entry["datetime"]):
+            col1, col2 = st.columns(2)
+            with col1:
+                st.image(entry["image"], width=200)
+            with col2:
+                st.write("### Detected Foods:")
                 for food, conf in entry["detected_foods"].items():
                     st.write(f"- {food}: {conf:.1%}")
+                st.write("### Nutrition Summary:")
+                for nutrient, value in entry["summary"]["totals"].items():
+                    st.write(f"- {nutrient.title()}: {value}{'g' if nutrient != 'calories' else ''}")
+
+# pages/Tips.py
+import streamlit as st
+
+def show():
+    st.title("💡 Healthy Eating Tips")
+    
+    st.write("""
+    ### General Tips:
+    1. Balance your plate with proteins, carbs, and vegetables
+    2. Stay hydrated throughout the day
+    3. Watch portion sizes
+    4. Include a variety of colors in your meals
+    
+    ### Food-Specific Tips:
+    """)
+    
+    for food, info in NUTRITION_DB.items():
+        with st.expander(f"Tips for {food.title()}"):
+            for tip in info["tips"]:
+                st.write(f"- {tip}")
+
+# main.py
+import streamlit as st
+from PIL import Image
+import torch
+from transformers import AutoImageProcessor, AutoModelForImageClassification
+from datetime import datetime
+from typing import Dict, List, Any
+import importlib
+import sys
+from pathlib import Path
+
+# Your existing NUTRITION_DB and classes (FoodAnalyzer, etc.) go here...
+
+PAGES = {
+    "🏠 Home": "Home",
+    "🔍 Analyzer": "Analyzer",
+    "📊 History": "History",
+    "💡 Tips": "Tips"
+}
+
+def main():
+    st.set_page_config(
+        page_title="Food Analyzer",
+        page_icon="🍽️",
+        layout="wide",
+        initial_sidebar_state="expanded"
+    )
+
+    st.sidebar.title("Navigation")
+    selection = st.sidebar.radio("Go to", list(PAGES.keys()))
+    
+    page = importlib.import_module(f"pages.{PAGES[selection]}")
+    page.show()
+    
+    st.sidebar.divider()
+    st.sidebar.title("About")
+    st.sidebar.info(
+        """
+        This app helps you analyze food images and track your nutrition.
+        Upload photos of your meals to get instant nutritional information
+        and personalized tips!
+        """
+    )
 
 if __name__ == "__main__":
     main()
