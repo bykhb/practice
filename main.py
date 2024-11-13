@@ -11,7 +11,6 @@ sys.path.append(str(project_root))
 PAGES = {
     "🏠 Home": "Home",
     "📸 Food Scan": "FoodScan",
-    "📊 Scan History": "ScanHistory",
     "🍳 Food Recipe": "FoodRecipe",
     "💡 Food Consultant": "FoodConsultant",
     "💬 Share": "Share"
@@ -22,8 +21,8 @@ def show_home():
     st.write("Welcome to the Food Analyzer! Upload food images to get nutritional analysis.")
     st.write("### Features:")
     st.write("- 📸 Food Scan")
+    st.write("- 🍳 Food Recipe")
     st.write("- 💡 Food Consultant")
-    st.write("- 📊 Scan History")
     st.write("- 💬 Share")
 
 def main():
