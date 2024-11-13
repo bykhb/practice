@@ -12,6 +12,7 @@ PAGES = {
     "🏠 Home": "Home",
     "📸 Food Scan": "FoodScan",
     "📊 Scan History": "ScanHistory",
+    "🍳 Food Recipe": "FoodRecipe",
     "💡 Food Consultant": "FoodConsultant",
     "💬 Share": "Share"
 }
