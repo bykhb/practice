@@ -1,5 +1,3 @@
-
-# pages/History.py
 import streamlit as st
 from datetime import datetime
 
@@ -20,8 +18,11 @@ def show():
                 st.image(entry["image"], width=200)
             with col2:
                 st.write("### Detected Foods:")
-                for food, conf in entry["detected_foods"].items():
-                    st.write(f"- {food}: {conf:.1%}")
+                st.write(f"- {entry['detected_foods']}")
                 st.write("### Nutrition Summary:")
-                for nutrient, value in entry["summary"]["totals"].items():
-                    st.write(f"- {nutrient.title()}: {value}{'g' if nutrient != 'calories' else ''}")
+                if entry["summary"]:
+                    if "totals" in entry["summary"]:
+                        for nutrient, value in entry["summary"]["totals"].items():
+                            st.write(f"- {nutrient.title()}: {value}{'g' if nutrient != 'calories' else ''}")
+                else:
+                    st.write("No nutrition information available") 
