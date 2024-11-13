@@ -6,6 +6,6 @@ def show():
     st.write("Welcome to the Food Analyzer! Upload food images to get nutritional analysis.")
     st.write("### Features:")
     st.write("- 📸 Food Scan")
-    st.write("- 🍎 Nutritional Analysis")
-    st.write("- 📊 Scan History")
     st.write("- 💡 Food Consultant")
+    st.write("- 📊 Scan History")
+    st.write("- 💬 Share")
