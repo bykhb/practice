@@ -1,4 +1,3 @@
-
 # main.py
 import streamlit as st
 from PIL import Image
@@ -13,10 +12,10 @@ from pathlib import Path
 # Your existing NUTRITION_DB and classes (FoodAnalyzer, etc.) go here...
 PAGES = {
     "🏠 Home": "Home",
-    "📸 Food Scan": "Food_Scan",
-    "📊 Scan History": "Scan_History",
-    "💡 Food Consultant": "Food_Consultant",
-    "💬 Slack": "Slack"
+    "📸 Food Scan": "Food Scan",
+    "📊 Scan History": "Scan History",
+    "💡 Food Consultant": "Food Consultant",
+    "💬 Share": "Share by Slack"
 }
 
 def main():
