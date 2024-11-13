@@ -1,17 +1,15 @@
 # main.py
 import streamlit as st
-from PIL import Image
-import torch
-from transformers import AutoImageProcessor, AutoModelForImageClassification
-from datetime import datetime
-from typing import Dict, List, Any
 import importlib
 import sys
 from pathlib import Path
 
-# Your existing NUTRITION_DB and classes (FoodAnalyzer, etc.) go here...
+# Add the project root directory to Python path
+project_root = Path(__file__).parent
+sys.path.append(str(project_root))
+
 PAGES = {
-    "🏠 Home": "Home",
+    "🏠 Home": "home",
     "📸 Food Scan": "FoodScan",
     "📊 Scan History": "ScanHistory",
     "💡 Food Consultant": "FoodConsultant",
@@ -50,16 +48,19 @@ def main():
     """
     st.markdown(hide_pages, unsafe_allow_html=True)
     
-    # 중복된 radio button 제거 - 하나만 유지
     st.sidebar.title("Navigation")
     selection = st.sidebar.radio("Go to", list(PAGES.keys()))
     
-    # Handle home page separately
-    if selection == "🏠 Home":
-        show_home()
-    else:
-        page = importlib.import_module(f"pages.{PAGES[selection]}")
-        page.show()
+    try:
+        # Home 페이지는 main.py에서 직접 처리
+        if selection == "🏠 Home":
+            show_home()
+        else:
+            # 다른 페이지들은 pages 디렉토리에서 import
+            page_module = importlib.import_module(f"pages.{PAGES[selection]}")
+            page_module.show()
+    except Exception as e:
+        st.error(f"Error loading page: {str(e)}")
     
     st.sidebar.divider()
     st.sidebar.title("About")
