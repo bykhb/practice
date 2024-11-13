@@ -9,7 +9,7 @@ project_root = Path(__file__).parent
 sys.path.append(str(project_root))
 
 PAGES = {
-    "🏠 Home": "home",
+    "🏠 Home": "Home",
     "📸 Food Scan": "FoodScan",
     "📊 Scan History": "ScanHistory",
     "💡 Food Consultant": "FoodConsultant",
@@ -51,16 +51,16 @@ def main():
     st.sidebar.title("Navigation")
     selection = st.sidebar.radio("Go to", list(PAGES.keys()))
     
-    try:
-        # Home 페이지는 main.py에서 직접 처리
-        if selection == "🏠 Home":
-            show_home()
-        else:
+    # Home 페이지는 main.py에서 직접 처리
+    if selection == "🏠 Home":
+        show_home()
+    else:
+        try:
             # 다른 페이지들은 pages 디렉토리에서 import
             page_module = importlib.import_module(f"pages.{PAGES[selection]}")
             page_module.show()
-    except Exception as e:
-        st.error(f"Error loading page: {str(e)}")
+        except Exception as e:
+            st.error(f"Error loading page: {str(e)}")
     
     st.sidebar.divider()
     st.sidebar.title("About")
