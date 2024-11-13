@@ -26,6 +26,18 @@ class FoodAnalyzer:
         # Implement summary logic
         return {}
 
+def display_results(detected_foods, nutrition_summary):
+    """Display the analysis results"""
+    st.subheader("Analysis Results")
+    st.write(f"Detected Food: {detected_foods}")
+    
+    st.subheader("Nutritional Information")
+    if nutrition_summary:
+        for key, value in nutrition_summary.items():
+            st.write(f"{key}: {value}")
+    else:
+        st.write("No nutritional information available")
+
 def show():
     st.title("🔍 Food Scan")
     
