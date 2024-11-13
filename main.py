@@ -12,25 +12,54 @@ from pathlib import Path
 # Your existing NUTRITION_DB and classes (FoodAnalyzer, etc.) go here...
 PAGES = {
     "🏠 Home": "Home",
-    "📸 Food Scan": "Food Scan",
-    "📊 Scan History": "Scan History",
-    "💡 Food Consultant": "Food Consultant",
-    "💬 Share": "Share by Slack"
+    "📸 Food Scan": "FoodScan",
+    "📊 Scan History": "ScanHistory",
+    "💡 Food Consultant": "FoodConsultant",
+    "💬 Share": "Share"
 }
+
+def show_home():
+    st.title("🏠 Food Analyzer Home")
+    st.write("Welcome to the Food Analyzer! Upload food images to get nutritional analysis.")
+    st.write("### Features:")
+    st.write("- 📸 Food Scan")
+    st.write("- 💡 Food Consultant")
+    st.write("- 📊 Scan History")
+    st.write("- 💬 Share")
 
 def main():
     st.set_page_config(
         page_title="Food Analyzer",
         page_icon="🍽️",
         layout="wide",
-        initial_sidebar_state="expanded"
+        initial_sidebar_state="expanded",
+        menu_items={
+            'Get Help': None,
+            'Report a bug': None,
+            'About': None
+        }
     )
-
+    
+    # Hide default Streamlit pages navigation
+    hide_pages = """
+        <style>
+            div[data-testid="stSidebarNav"] {display: none !important;}
+            #MainMenu {visibility: hidden;}
+            header {visibility: hidden;}
+        </style>
+    """
+    st.markdown(hide_pages, unsafe_allow_html=True)
+    
+    # 중복된 radio button 제거 - 하나만 유지
     st.sidebar.title("Navigation")
     selection = st.sidebar.radio("Go to", list(PAGES.keys()))
     
-    page = importlib.import_module(f"pages.{PAGES[selection]}")
-    page.show()
+    # Handle home page separately
+    if selection == "🏠 Home":
+        show_home()
+    else:
+        page = importlib.import_module(f"pages.{PAGES[selection]}")
+        page.show()
     
     st.sidebar.divider()
     st.sidebar.title("About")

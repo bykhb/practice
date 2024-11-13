@@ -3,7 +3,7 @@
 import streamlit as st
 
 def show():
-    st.title("💡 Healthy Eating Tips")
+    st.title("💡 Food Consultant")
     
     st.write("""
     ### General Tips:

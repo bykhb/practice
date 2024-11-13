@@ -6,8 +6,28 @@ from transformers import AutoImageProcessor, AutoModelForImageClassification
 from datetime import datetime
 from typing import Dict, List, Any
 
+
+class FoodAnalyzer:
+    def __init__(self):
+        self.processor = AutoImageProcessor.from_pretrained("nateraw/food")
+        self.model = AutoModelForImageClassification.from_pretrained("nateraw/food")
+        
+    def analyze_image(self, image):
+        inputs = self.processor(image, return_tensors="pt")
+        outputs = self.model(**inputs)
+        probs = outputs.logits.softmax(1)
+        return self.model.config.id2label[probs.argmax().item()]
+        
+    def get_nutrition_info(self, foods):
+        # Implement nutrition lookup logic
+        return {}
+        
+    def get_nutrition_summary(self, nutrition_info):
+        # Implement summary logic
+        return {}
+
 def show():
-    st.title("🔍 Food Analysis")
+    st.title("🔍 Food Scan")
     
     if 'history' not in st.session_state:
         st.session_state.history = []

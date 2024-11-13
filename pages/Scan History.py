@@ -4,7 +4,7 @@ import streamlit as st
 from datetime import datetime
 
 def show():
-    st.title("📊 Analysis History")
+    st.title("📊 Scan History")
     
     if 'history' not in st.session_state:
         st.session_state.history = []
