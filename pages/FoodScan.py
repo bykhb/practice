@@ -15,7 +15,7 @@ class FoodAnalyzer:
         
         try:
             response = self.client.chat.completions.create(
-                model="gpt-4-vision-preview-v2",
+                model="gpt-4o",
                 messages=[
                     {
                         "role": "user",
