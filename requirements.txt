@@ -7,3 +7,5 @@ anthropic
 transformers
 torch
 plotly
+pillow
+slack-sdk

@@ -1,38 +1,82 @@
 # pages/Analyzer.py
 import streamlit as st
 from PIL import Image
-import torch
-from transformers import AutoImageProcessor, AutoModelForImageClassification
+from openai import OpenAI
 from datetime import datetime
-from typing import Dict, List, Any
+import os
 
 class FoodAnalyzer:
     def __init__(self):
-        self.processor = AutoImageProcessor.from_pretrained("microsoft/resnet-50")
-        self.model = AutoModelForImageClassification.from_pretrained("microsoft/resnet-50")
+        self.client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
         
     def analyze_image(self, image):
-        inputs = self.processor(image, return_tensors="pt")
-        outputs = self.model(**inputs)
-        probs = outputs.logits.softmax(1)
+        # 이미지를 바이트로 변환
+        img_byte_arr = self.prepare_image(image)
         
-        top_preds = torch.topk(probs, 3)
-        results = []
-        for i in range(3):
-            score = top_preds.values[0][i].item()
-            label = self.model.config.id2label[top_preds.indices[0][i].item()]
-            results.append({"food": label, "confidence": f"{score:.2%}"})
-        return results
+        try:
+            response = self.client.chat.completions.create(
+                model="gpt-4-vision-preview",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "이 이미지에 있는 음식을 분석해주세요. 음식의 이름과 예상되는 영양성분을 알려주세요."
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/jpeg;base64,{img_byte_arr}"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                max_tokens=500
+            )
+            
+            # OpenAI 응답을 파싱하여 결과 반환
+            analysis_result = response.choices[0].message.content
+            return [{"food": analysis_result, "confidence": "높음"}]
+            
+        except Exception as e:
+            st.error(f"이미지 분석 중 오류 발생: {str(e)}")
+            return []
+
+    def prepare_image(self, image):
+        import base64
+        import io
         
+        # PIL Image를 바이트로 변환
+        buffered = io.BytesIO()
+        image.save(buffered, format="JPEG")
+        img_str = base64.b64encode(buffered.getvalue()).decode()
+        return img_str
+
     def get_nutrition_info(self, foods):
+        # 영양 정보 데이터베이스 연동 (예시)
         nutrition_data = {}
         for food in foods:
-            nutrition_data[food["food"]] = {
-                "calories": "300 kcal",
-                "protein": "10g",
-                "carbs": "45g",
-                "fat": "12g"
-            }
+            try:
+                response = self.client.chat.completions.create(
+                    model="gpt-4",
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": f"'{food['food']}'의 예상되는 영양성분을 칼로리, 단백질, 탄수화물, 지방 수치로 알려주세요."
+                        }
+                    ]
+                )
+                nutrition_info = response.choices[0].message.content
+                nutrition_data[food["food"]] = {
+                    "calories": "분석 중...",
+                    "protein": "분석 중...",
+                    "carbs": "분석 중...",
+                    "fat": "분석 중..."
+                }
+            except Exception as e:
+                st.error(f"영양 정보 분석 중 오류 발생: {str(e)}")
         return nutrition_data
         
     def get_nutrition_summary(self, nutrition_info):
