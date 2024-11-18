@@ -15,14 +15,14 @@ class FoodAnalyzer:
         
         try:
             response = self.client.chat.completions.create(
-                model="gpt-4-vision-preview",
+                model="gpt-4-vision-preview-v2",
                 messages=[
                     {
                         "role": "user",
                         "content": [
                             {
                                 "type": "text",
-                                "text": "이 이미지에 있는 음식을 분석해주세요. 음식의 이름과 예상되는 영양성분을 알려주세요."
+                                "text": "이 이미지에 있는 음식을 분석해주세요. 다음 형식으로 답변해주세요:\n1. 음식 이름\n2. 예상 칼로리\n3. 영양성분(단백질, 탄수화물, 지방)"
                             },
                             {
                                 "type": "image_url",
