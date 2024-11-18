@@ -10,3 +10,5 @@ plotly
 pillow
 slack-sdk
 secure-smtplib
+opencv-python-headless
+pandas
