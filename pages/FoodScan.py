@@ -6,7 +6,6 @@ from transformers import AutoImageProcessor, AutoModelForImageClassification
 from datetime import datetime
 from typing import Dict, List, Any
 
-
 class FoodAnalyzer:
     def __init__(self):
         self.processor = AutoImageProcessor.from_pretrained("microsoft/resnet-50")

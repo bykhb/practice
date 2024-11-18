@@ -17,17 +17,17 @@ PAGES = {
 }
 
 def show_home():
-    st.title("🏠 음식 분석기 홈")
-    st.write("음식 분석기에 오신 것을 환영합니다! 음식 이미지를 업로드하여 영양 분석을 받아보세요.")
+    st.title("🏠 Food Analzyer")
+    st.write("Food Analzyer에 오신 것을 환영합니다! 음식 이미지를 업로드하여 영양 분석을 받아보세요.")
     st.write("### 주요 기능:")
     st.write("- 📸 음식 스캔")
-    st.write("- 🍳 음식 레시피")
     st.write("- 💡 음식 컨설턴트")
+    st.write("- 🍳 음식 레시피 추천")
     st.write("- 💬 공유하기")
 
 def main():
     st.set_page_config(
-        page_title="음식 분석기",
+        page_title="Food Analzyer",
         page_icon="🍽️",
         layout="wide",
         initial_sidebar_state="expanded",
@@ -48,7 +48,7 @@ def main():
     """
     st.markdown(hide_pages, unsafe_allow_html=True)
     
-    st.sidebar.title("메뉴")
+    st.sidebar.title("Navigation")
     selection = st.sidebar.radio("이동하기", list(PAGES.keys()))
     
     # Home 페이지는 main.py에서 직접 처리
@@ -66,7 +66,7 @@ def main():
     st.sidebar.title("소개")
     st.sidebar.info(
         """
-        이 앱은 음식 이미지를 분석하고 영양 정보를 추적하는 데 도움을 줍니다.
+        이 서비스는 음식 이미지를 분석하고 영양 정보를 추적하는 것에 도움을 줍니다.
         식사 사진을 업로드하여 즉시 영양 정보와 맞춤형 조언을 받아보세요!
         """
     )
