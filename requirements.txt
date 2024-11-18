@@ -9,3 +9,4 @@ torch
 plotly
 pillow
 slack-sdk
+secure-smtplib

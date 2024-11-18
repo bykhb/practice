@@ -4,6 +4,10 @@ from PIL import Image
 from openai import OpenAI
 from datetime import datetime
 import os
+import cv2
+import numpy as np
+from PIL import Image, ImageDraw
+import pandas as pd
 
 class FoodAnalyzer:
     def __init__(self):
@@ -22,7 +26,7 @@ class FoodAnalyzer:
                         "content": [
                             {
                                 "type": "text",
-                                "text": "이 이미지에 있는 음식을 분석해주세요. 다음 형식으로 답변해주세요:\n1. 음식 이름\n2. 예상 칼로리\n3. 영양성분(단백질, 탄수화물, 지방)"
+                                "text": "이미지에서 음식을 찾아 다음 형식으로 답변해주세요:\n1. 음식 이름\n2. 위치 좌표 (x1,y1,x2,y2)\n3. 예상 칼로리\n4. 영양성분(단백질, 탄수화물, 지방)"
                             },
                             {
                                 "type": "image_url",
@@ -36,13 +40,29 @@ class FoodAnalyzer:
                 max_tokens=500
             )
             
-            # OpenAI 응답을 파싱하여 결과 반환
+            # 응답 파싱 및 바운딩 박스 정보 추출
             analysis_result = response.choices[0].message.content
-            return [{"food": analysis_result, "confidence": "높음"}]
+            detected_items = self.parse_detection_result(analysis_result)
+            return detected_items
             
         except Exception as e:
             st.error(f"이미지 분석 중 오류 발생: {str(e)}")
             return []
+
+    def draw_boxes(self, image, detected_items):
+        # PIL 이미지로 변환
+        img_draw = image.copy()
+        draw = ImageDraw.Draw(img_draw)
+        
+        for item in detected_items:
+            if 'bbox' in item:
+                x1, y1, x2, y2 = item['bbox']
+                # 바운딩 박스 그리기
+                draw.rectangle([x1, y1, x2, y2], outline='red', width=2)
+                # 레이블 추가
+                draw.text((x1, y1-20), item['food'], fill='red')
+        
+        return img_draw
 
     def prepare_image(self, image):
         import base64
@@ -59,7 +79,7 @@ class FoodAnalyzer:
         for food in foods:
             try:
                 response = self.client.chat.completions.create(
-                    model="gpt-4",
+                    model="gpt-4o",
                     messages=[
                         {
                             "role": "user",
@@ -99,26 +119,35 @@ class FoodAnalyzer:
         # Implement summary logic
         return {}
 
-def display_results(detected_foods, nutrition_info):
-    st.subheader("분석 결과")
+def display_results(image, detected_foods, nutrition_info):
+    col1, col2 = st.columns([1, 1])
     
-    for food in detected_foods:
-        col1, col2 = st.columns(2)
-        with col1:
-            st.write(f"🍽 음식: {food['food']}")
-            st.write(f"신뢰도: {food['confidence']}")
-        
-        with col2:
+    with col1:
+        # 바운딩 박스가 그려진 이미지 표시
+        st.image(image, caption="분석된 음식", use_column_width=True)
+    
+    with col2:
+        # 데이터프레임으로 결과 표시
+        results_data = []
+        for food in detected_foods:
             if food['food'] in nutrition_info:
                 nutri = nutrition_info[food['food']]
-                st.write("영양 정보:")
-                st.write(f"• 칼로리: {nutri['calories']}")
-                st.write(f"• 단백질: {nutri['protein']}")
-                st.write(f"• 탄수화물: {nutri['carbs']}")
-                st.write(f"• 지방: {nutri['fat']}")
+                results_data.append({
+                    '음식': food['food'],
+                    '칼로리': nutri['calories'],
+                    '단백질': nutri['protein'],
+                    '탄수화물': nutri['carbs'],
+                    '지방': nutri['fat']
+                })
+        
+        if results_data:
+            df = pd.DataFrame(results_data)
+            st.table(df)
+        else:
+            st.warning("분석된 영양 정보가 없습니다.")
 
 def show():
-    st.title("🔍 Food Scan")
+    st.title("🔍 음식 스캔")
     
     if 'history' not in st.session_state:
         st.session_state.history = []
@@ -128,27 +157,21 @@ def show():
     uploaded_file = st.file_uploader("음식 이미지 업로드", type=["jpg", "jpeg", "png"])
     
     if uploaded_file:
-        # 이미지 열기 및 크기 조절
         image = Image.open(uploaded_file)
         
-        # 이미지와 분석 결과를 나란히 표시하기 위한 컬럼 생성
-        col1, col2 = st.columns([1, 1])  # 1:1 비율로 공간 분할
-        
-        with col1:
-            # 이미지 표시 (너비 300픽셀로 제한)
-            st.image(image, caption="업로드된 음식", width=300)
-        
-        with col2:
-            with st.spinner("분석 중..."):
-                detected_foods = analyzer.analyze_image(image)
-                nutrition_info = analyzer.get_nutrition_info(detected_foods)
-                nutrition_summary = analyzer.get_nutrition_summary(nutrition_info)
-                
-                st.session_state.history.append({
-                    "datetime": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                    "image": image,
-                    "detected_foods": detected_foods,
-                    "summary": nutrition_summary
-                })
+        with st.spinner("음식을 분석하고 있습니다..."):
+            detected_foods = analyzer.analyze_image(image)
+            nutrition_info = analyzer.get_nutrition_info(detected_foods)
             
-            display_results(detected_foods, nutrition_info)
+            # 바운딩 박스 그리기
+            annotated_image = analyzer.draw_boxes(image, detected_foods)
+            
+            # 세션 상태 업데이트
+            st.session_state.history.append({
+                "datetime": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                "image": annotated_image,
+                "detected_foods": detected_foods,
+                "summary": nutrition_info
+            })
+        
+        display_results(annotated_image, detected_foods, nutrition_info)

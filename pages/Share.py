@@ -1,28 +1,47 @@
 import streamlit as st
-from slack_sdk import WebClient
-from slack_sdk.errors import SlackApiError
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
+from email.mime.multipart import MIMEMultipart
 import os
 import io
 
-def share_to_slack(image, analysis_text):
+def send_email(recipient_email, image, analysis_text):
     try:
-        client = WebClient(token=os.getenv('SLACK_BOT_TOKEN'))
-        
-        # 이미지를 바이트로 변환
+        # 이메일 서버 설정
+        smtp_server = "smtp.gmail.com"
+        smtp_port = 587
+        sender_email = os.getenv('EMAIL_ADDRESS')
+        sender_password = os.getenv('EMAIL_PASSWORD')
+
+        # 이메일 메시지 생성
+        msg = MIMEMultipart()
+        msg['Subject'] = '음식 분석 결과'
+        msg['From'] = sender_email
+        msg['To'] = recipient_email
+
+        # 분석 텍스트 추가
+        text_part = MIMEText(analysis_text, 'plain', 'utf-8')
+        msg.attach(text_part)
+
+        # 이미지 첨부
         img_byte_arr = io.BytesIO()
         image.save(img_byte_arr, format='PNG')
         img_byte_arr = img_byte_arr.getvalue()
+        
+        image_part = MIMEImage(img_byte_arr)
+        image_part.add_header('Content-Disposition', 'attachment', filename='food_analysis.png')
+        msg.attach(image_part)
 
-        # 이미지 업로드
-        image_upload = client.files_upload_v2(
-            channel=os.getenv('SLACK_CHANNEL_ID'),
-            file=img_byte_arr,
-            filename="food_analysis.png",
-            initial_comment=analysis_text
-        )
+        # 이메일 전송
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
+        
         return True
-    except SlackApiError as e:
-        st.error(f"Slack 공유 중 오류 발생: {str(e)}")
+    except Exception as e:
+        st.error(f"이메일 전송 중 오류 발생: {str(e)}")
         return False
 
 def show():
@@ -54,17 +73,24 @@ def show():
                 st.write("**영양 요약:**")
                 st.write(latest_analysis["summary"])
         
-        if st.button("Slack으로 공유하기"):
+        # 이메일 입력 필드 추가
+        recipient_email = st.text_input("분석 결과를 받을 이메일 주소를 입력하세요:")
+        
+        if st.button("이메일로 전송하기") and recipient_email:
             analysis_text = f"""
+            음식 분석 결과
+            
             분석 시간: {latest_analysis['datetime']}
             감지된 음식: {latest_analysis['detected_foods']}
             영양 요약: {latest_analysis['summary']}
             """
             
-            if share_to_slack(latest_analysis["image"], analysis_text):
-                st.success("Slack에 성공적으로 공유되었습니다!")
+            if send_email(recipient_email, latest_analysis["image"], analysis_text):
+                st.success("분석 결과가 이메일로 전송되었습니다!")
             else:
-                st.error("Slack 공유 중 오류가 발생했습니다.")
+                st.error("이메일 전송 중 오류가 발생했습니다.")
+        elif st.button("이메일로 전송하기") and not recipient_email:
+            st.warning("이메일 주소를 입력해주세요.")
             
     except Exception as e:
         st.error(f"결과를 표시하는 중 오류가 발생했습니다: {str(e)}")
