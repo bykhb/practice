@@ -5,6 +5,7 @@ from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 import os
 import io
+from openai import OpenAI
 
 def send_email(recipient_email, image, analysis_text):
     try:
@@ -44,6 +45,46 @@ def send_email(recipient_email, image, analysis_text):
         st.error(f"이메일 전송 중 오류 발생: {str(e)}")
         return False
 
+def get_nutrition_summary(detected_foods, nutrition_info):
+    try:
+        client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        
+        # 영양 정보를 문자열로 구성
+        foods_info = []
+        for food in detected_foods:
+            if food['food'] in nutrition_info:
+                nutri = nutrition_info[food['food']]
+                foods_info.append(f"""
+                음식: {food['food']}
+                칼로리: {nutri['calories']}
+                단백질: {nutri['protein']}
+                탄수화물: {nutri['carbs']}
+                지방: {nutri['fat']}
+                """)
+        
+        # GPT-4에 요약 요청
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"""다음 음식들의 영양 정보를 바탕으로 전체적인 영양 분석 요약을 작성해주세요:
+
+{'\n'.join(foods_info)}
+
+다음 내용을 포함해주세요:
+1. 전체 칼로리 합계
+2. 영양 균형 평가
+3. 건강 관점에서의 조언
+"""
+                }
+            ]
+        )
+        
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"영양 정보 요약 생성 중 오류 발생: {str(e)}"
+
 def show():
     st.title("💬 공유하기")
     
@@ -67,24 +108,29 @@ def show():
             
         with col2:
             st.write(f"**분석 시간:** {latest_analysis['datetime']}")
-            st.write(f"**감지된 음식:** {latest_analysis['detected_foods']}")
+            st.write(f"**감지된 음식:** {', '.join([food['food'] for food in latest_analysis['detected_foods']])}")
             
-            if latest_analysis["summary"]:
-                st.write("**영양 요약:**")
-                st.write(latest_analysis["summary"])
+            # GPT-4를 사용한 영양 정보 요약
+            nutrition_summary = get_nutrition_summary(
+                latest_analysis['detected_foods'],
+                latest_analysis['summary']
+            )
+            st.write("**영양 분석 요약:**")
+            st.write(nutrition_summary)
         
         # 이메일 입력 필드 추가
         recipient_email = st.text_input("분석 결과를 받을 이메일 주소를 입력하세요:", key="email_input")
         
-        # 이메일이 입력된 경우와 아닌 경우에 대한 버튼을 분리하고 각각 고유한 key 추가
         if recipient_email:
             if st.button("이메일로 전송하기", key="send_email_button"):
                 analysis_text = f"""
                 음식 분석 결과
-                
+
                 분석 시간: {latest_analysis['datetime']}
-                감지된 음식: {latest_analysis['detected_foods']}
-                영양 요약: {latest_analysis['summary']}
+                감지된 음식: {', '.join([food['food'] for food in latest_analysis['detected_foods']])}
+
+                영양 분석 요약:
+                {nutrition_summary}
                 """
                 
                 if send_email(recipient_email, latest_analysis["image"], analysis_text):
