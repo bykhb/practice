@@ -17,27 +17,32 @@ class FoodAnalyzer:
         img_byte_arr = self.prepare_image(image)
         
         try:
-            # 이미지 크기 가져오기
             width, height = image.size
             
             response = self.client.chat.completions.create(
-                model="gpt-4o",  # 정확한 모델명으로 수정
+                model="gpt-4o",  # 모델명 수정
                 messages=[
                     {
                         "role": "user",
                         "content": [
                             {
                                 "type": "text",
-                                "text": f"""이미지에서 발견된 각각의 음식에 대해 다음 정보를 제공해주세요:
-이미지 크기는 너비 {width}px, 높이 {height}px입니다.
+                                "text": f"""이미지에 있는 모든 음식을 찾아서 분석해주세요.
+이미지에 음식이 하나만 있더라도 반드시 분석해주세요.
 
-다음 형식으로 각 음식마다 답변해주세요:
-1. 음식 이름: [음식명]
-2. 위치: 왼쪽 상단 x,y 좌표와 오른쪽 하단 x,y 좌표 (예: 100,100,300,300)
-3. 칼로리: [숫자]kcal
-4. 영양성분: 단백질 [숫자]g, 탄수화물 [숫자]g, 지방 [숫자]g
+각 음식에 대해 다음 정보를 제공해주세요:
+1. 음식 이름: [구체적인 음식명]
+2. 위치: 음식이 있는 영역의 좌표값 (x1,y1,x2,y2 형식)
+   - x1,y1: 왼쪽 상단 좌표
+   - x2,y2: 오른쪽 하단 좌표
+   - 이미지 크기는 {width}x{height}px입니다.
+3. 칼로리: 예상 칼로리를 kcal 단위로
+4. 영양성분: 단백질, 탄수화물, 지방을 g 단위로
 
-각 음식은 번호를 매겨서 구분해주세요."""
+주의사항:
+- 이미지에 음식이 하나만 있는 경우에도 반드시 분석해주세요.
+- 음식이 없는 경우에만 "음식을 찾을 수 없습니다"라고 답변해주세요.
+- 좌표는 이미지 크기 내에서 적절한 값으로 지정해주세요."""
                             },
                             {
                                 "type": "image_url",
@@ -50,9 +55,20 @@ class FoodAnalyzer:
                 ],
                 max_tokens=500
             )
-            
+        
             analysis_result = response.choices[0].message.content
+            
+            # 음식을 찾을 수 없는 경우 처리
+            if "음식을 찾을 수 없습니다" in analysis_result:
+                st.warning("이미지에서 음식을 찾을 수 없습니다.")
+                return []
+            
             detected_items = self.parse_detection_result(analysis_result)
+            
+            # 결과가 비어있는 경우 처리
+            if not detected_items:
+                st.warning("음식 분석에 실패했습니다. 다른 이미지를 시도해보세요.")
+            
             return detected_items
             
         except Exception as e:

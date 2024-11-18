@@ -62,23 +62,23 @@ def get_nutrition_summary(detected_foods, nutrition_info):
                 지방: {nutri['fat']}
                 """)
         
-        # GPT-4에 요약 요청
+        # GPT-4에 간단한 요약 요청
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
                 {
                     "role": "user",
-                    "content": f"""다음 음식들의 영양 정보를 바탕으로 전체적인 영양 분석 요약을 작성해주세요:
+                    "content": f"""다음 음식들의 영양 정보를 2-3문장으로 간단히 요약해주세요:
 
 {'\n'.join(foods_info)}
 
-다음 내용을 포함해주세요:
-1. 전체 칼로리 합계
-2. 영양 균형 평가
-3. 건강 관점에서의 조언
+반드시 포함할 내용:
+- 전체 칼로리
+- 간단한 영양 평가
 """
                 }
-            ]
+            ],
+            max_tokens=150  # 토큰 수 제한
         )
         
         return response.choices[0].message.content
