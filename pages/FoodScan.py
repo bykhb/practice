@@ -14,19 +14,30 @@ class FoodAnalyzer:
         self.client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
         
     def analyze_image(self, image):
-        # 이미지를 바이트로 변환
         img_byte_arr = self.prepare_image(image)
         
         try:
+            # 이미지 크기 가져오기
+            width, height = image.size
+            
             response = self.client.chat.completions.create(
-                model="gpt-4o",
+                model="gpt-4o",  # 정확한 모델명으로 수정
                 messages=[
                     {
                         "role": "user",
                         "content": [
                             {
                                 "type": "text",
-                                "text": "이미지에서 음식을 찾아 다음 형식으로 답변해주세요:\n1. 음식 이름\n2. 위치 좌표 (x1,y1,x2,y2)\n3. 예상 칼로리\n4. 영양성분(단백질, 탄수화물, 지방)"
+                                "text": f"""이미지에서 발견된 각각의 음식에 대해 다음 정보를 제공해주세요:
+이미지 크기는 너비 {width}px, 높이 {height}px입니다.
+
+다음 형식으로 각 음식마다 답변해주세요:
+1. 음식 이름: [음식명]
+2. 위치: 왼쪽 상단 x,y 좌표와 오른쪽 하단 x,y 좌표 (예: 100,100,300,300)
+3. 칼로리: [숫자]kcal
+4. 영양성분: 단백질 [숫자]g, 탄수화물 [숫자]g, 지방 [숫자]g
+
+각 음식은 번호를 매겨서 구분해주세요."""
                             },
                             {
                                 "type": "image_url",
@@ -40,7 +51,6 @@ class FoodAnalyzer:
                 max_tokens=500
             )
             
-            # 응답 파싱 및 바운딩 박스 정보 추출
             analysis_result = response.choices[0].message.content
             detected_items = self.parse_detection_result(analysis_result)
             return detected_items
@@ -50,17 +60,30 @@ class FoodAnalyzer:
             return []
 
     def draw_boxes(self, image, detected_items):
-        # PIL 이미지로 변환
         img_draw = image.copy()
         draw = ImageDraw.Draw(img_draw)
+        
+        # 폰트 설정 (기본 폰트 사용)
+        try:
+            from PIL import ImageFont
+            font = ImageFont.truetype("NanumGothic.ttf", 20)  # 한글 폰트
+        except:
+            font = None
         
         for item in detected_items:
             if 'bbox' in item:
                 x1, y1, x2, y2 = item['bbox']
-                # 바운딩 박스 그리기
-                draw.rectangle([x1, y1, x2, y2], outline='red', width=2)
-                # 레이블 추가
-                draw.text((x1, y1-20), item['food'], fill='red')
+                
+                # 박스 그리기
+                draw.rectangle([x1, y1, x2, y2], outline='red', width=3)
+                
+                # 텍스트 배경 그리기
+                text = f"{item['food']} ({item.get('calories', '')})"
+                text_bbox = draw.textbbox((x1, y1-25), text, font=font)
+                draw.rectangle(text_bbox, fill='red')
+                
+                # 텍스트 그리기
+                draw.text((x1, y1-25), text, fill='white', font=font)
         
         return img_draw
 
@@ -122,34 +145,33 @@ class FoodAnalyzer:
     def parse_detection_result(self, analysis_result):
         try:
             detected_items = []
-            lines = analysis_result.split('\n')
             current_item = {}
             
-            for line in lines:
-                line = line.strip()
-                if not line:
-                    continue
-                    
-                if line.startswith('1.'):  # 음식 이름
-                    if current_item:
-                        detected_items.append(current_item)
-                    current_item = {'food': line.split('1.')[1].strip()}
-                elif line.startswith('2.'):  # 위치 좌표
-                    try:
-                        coords = line.split('2.')[1].strip()
-                        coords = coords.replace('(', '').replace(')', '')
-                        x1, y1, x2, y2 = map(int, coords.split(','))
-                        current_item['bbox'] = [x1, y1, x2, y2]
-                    except:
-                        current_item['bbox'] = [0, 0, 100, 100]  # 기본값
-                elif line.startswith('3.'):  # 칼로리
-                    current_item['calories'] = line.split('3.')[1].strip()
-                elif line.startswith('4.'):  # 영양성분
-                    current_item['nutrition'] = line.split('4.')[1].strip()
+            # 각 음식 항목을 분리
+            items = analysis_result.split('\n\n')
             
-            if current_item:  # 마지막 아이템 추가
-                detected_items.append(current_item)
+            for item in items:
+                lines = item.strip().split('\n')
+                current_item = {}
                 
+                for line in lines:
+                    if '음식 이름:' in line:
+                        current_item['food'] = line.split('음식 이름:')[1].strip()
+                    elif '위치:' in line:
+                        coords = line.split('위치:')[1].strip()
+                        try:
+                            x1, y1, x2, y2 = map(int, coords.split(','))
+                            current_item['bbox'] = [x1, y1, x2, y2]
+                        except:
+                            continue
+                    elif '칼로리:' in line:
+                        current_item['calories'] = line.split('칼로리:')[1].strip()
+                    elif '영양성분:' in line:
+                        current_item['nutrition'] = line.split('영양성분:')[1].strip()
+                
+                if current_item and 'food' in current_item and 'bbox' in current_item:
+                    detected_items.append(current_item)
+            
             return detected_items
         except Exception as e:
             st.error(f"분석 결과 파싱 중 오류 발생: {str(e)}")
