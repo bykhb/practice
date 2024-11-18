@@ -109,22 +109,30 @@ def show():
 
     analyzer = FoodAnalyzer()
     
-    uploaded_file = st.file_uploader("Upload food image", type=["jpg", "jpeg", "png"])
+    uploaded_file = st.file_uploader("음식 이미지 업로드", type=["jpg", "jpeg", "png"])
     
     if uploaded_file:
+        # 이미지 열기 및 크기 조절
         image = Image.open(uploaded_file)
-        st.image(image, caption="Uploaded Food", use_column_width=True)
         
-        with st.spinner("Analyzing..."):
-            detected_foods = analyzer.analyze_image(image)
-            nutrition_info = analyzer.get_nutrition_info(detected_foods)
-            nutrition_summary = analyzer.get_nutrition_summary(nutrition_info)
+        # 이미지와 분석 결과를 나란히 표시하기 위한 컬럼 생성
+        col1, col2 = st.columns([1, 1])  # 1:1 비율로 공간 분할
+        
+        with col1:
+            # 이미지 표시 (너비 300픽셀로 제한)
+            st.image(image, caption="업로드된 음식", width=300)
+        
+        with col2:
+            with st.spinner("분석 중..."):
+                detected_foods = analyzer.analyze_image(image)
+                nutrition_info = analyzer.get_nutrition_info(detected_foods)
+                nutrition_summary = analyzer.get_nutrition_summary(nutrition_info)
+                
+                st.session_state.history.append({
+                    "datetime": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                    "image": image,
+                    "detected_foods": detected_foods,
+                    "summary": nutrition_summary
+                })
             
-            st.session_state.history.append({
-                "datetime": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                "image": image,
-                "detected_foods": detected_foods,
-                "summary": nutrition_summary
-            })
-        
-        display_results(detected_foods, nutrition_info)
+            display_results(detected_foods, nutrition_info)
