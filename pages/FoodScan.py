@@ -55,7 +55,6 @@ class FoodAnalyzer:
         return img_str
 
     def get_nutrition_info(self, foods):
-        # 영양 정보 데이터베이스 연동 (예시)
         nutrition_data = {}
         for food in foods:
             try:
@@ -64,19 +63,36 @@ class FoodAnalyzer:
                     messages=[
                         {
                             "role": "user",
-                            "content": f"'{food['food']}'의 예상되는 영양성분을 칼로리, 단백질, 탄수화물, 지방 수치로 알려주세요."
+                            "content": f"'{food['food']}'의 예상되는 영양성분을 다음 형식으로만 답변해주세요:\n칼로리: [숫자]kcal\n단백질: [숫자]g\n탄수화물: [숫자]g\n지방: [숫자]g"
                         }
                     ]
                 )
                 nutrition_info = response.choices[0].message.content
+                
+                # GPT 응답을 파싱하여 영양 정보 구조화
+                info_lines = nutrition_info.strip().split('\n')
+                parsed_info = {}
+                
+                for line in info_lines:
+                    if ':' in line:
+                        key, value = line.split(':', 1)
+                        parsed_info[key.strip().lower()] = value.strip()
+                
                 nutrition_data[food["food"]] = {
-                    "calories": "분석 중...",
-                    "protein": "분석 중...",
-                    "carbs": "분석 중...",
-                    "fat": "분석 중..."
+                    "calories": parsed_info.get('칼로리', 'N/A'),
+                    "protein": parsed_info.get('단백질', 'N/A'),
+                    "carbs": parsed_info.get('탄수화물', 'N/A'),
+                    "fat": parsed_info.get('지방', 'N/A')
                 }
+                
             except Exception as e:
                 st.error(f"영양 정보 분석 중 오류 발생: {str(e)}")
+                nutrition_data[food["food"]] = {
+                    "calories": "분석 실패",
+                    "protein": "분석 실패",
+                    "carbs": "분석 실패",
+                    "fat": "분석 실패"
+                }
         return nutrition_data
         
     def get_nutrition_summary(self, nutrition_info):
