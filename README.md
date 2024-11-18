@@ -10,14 +10,6 @@ Food Analyzer는 AI를 활용하여 음식 이미지를 분석하고 영양 정�
 - **음식 컨설턴트 (💡)**: 개인화된 영양 조언 제공
 - **결과 공유 (💬)**: 분석 결과를 다른 사람들과 공유
 
-## 🛠️ 기술 스택
-
-- Python 3.8+
-- Streamlit
-- OpenAI GPT-4V
-- PIL (Python Imaging Library)
-- Pandas
-
 ## 🚀 버전 히스토리
 
 ### v0.2.0 (2024-02)
@@ -38,6 +30,14 @@ Food Analyzer는 AI를 활용하여 음식 이미지를 분석하고 영양 정�
 - [ ] 영양 정보 데이터베이스 확장
 - [ ] 실시간 카메라 인식 기능
 - [ ] 모바일 앱 버전 개발
+
+## 🛠️ 기술 스택
+
+- Python 3.8+
+- Streamlit
+- OpenAI GPT-4V
+- PIL (Python Imaging Library)
+- Pandas
 
 ## 🔒 라이센스
 
