@@ -1,39 +1,33 @@
 import streamlit as st
 
 def show():
-    st.title("🍳 Food Recipe")
+    st.title("🍳 음식 레시피")
     
-    # 세션 상태 확인
     if 'history' not in st.session_state or not st.session_state.history:
-        st.info("No food analysis history found. Try analyzing some food images first!")
+        st.info("분석된 음식 기록이 없습니다. 먼저 음식 이미지를 분석해보세요!")
         return
         
     try:
-        # 가장 최근 분석된 음식 가져오기
         latest_analysis = st.session_state.history[-1]
         detected_food = latest_analysis.get("detected_foods", "")
         
-        st.subheader(f"Recipe Suggestions for: {detected_food}")
+        st.subheader(f"추천 레시피: {detected_food}")
         
-        # 레시피 검색 기능
-        search_term = st.text_input("Search for recipes:", value=detected_food)
+        search_term = st.text_input("레시피 검색:", value=detected_food)
         
         if search_term:
-            st.write("### Found Recipes:")
-            # 여기에 실제 레시피 검색 및 표시 로직 구현
-            # 임시 예시 데이터
-            st.write(f"1. Basic {search_term} Recipe")
-            st.write(f"2. Healthy {search_term}")
-            st.write(f"3. Quick {search_term}")
+            st.write("### 검색된 레시피:")
+            st.write(f"1. 기본 {search_term} 레시피")
+            st.write(f"2. 건강한 {search_term}")
+            st.write(f"3. 간편한 {search_term}")
             
-            # 레시피 상세 정보 (예시)
-            with st.expander(f"Basic {search_term} Recipe"):
-                st.write("### Ingredients:")
-                st.write("- Ingredient 1")
-                st.write("- Ingredient 2")
-                st.write("### Instructions:")
-                st.write("1. Step 1")
-                st.write("2. Step 2")
+            with st.expander(f"기본 {search_term} 레시피"):
+                st.write("### 재료:")
+                st.write("- 재료 1")
+                st.write("- 재료 2")
+                st.write("### 조리방법:")
+                st.write("1. 단계 1")
+                st.write("2. 단계 2")
                 
     except Exception as e:
-        st.error(f"An error occurred while loading recipes: {str(e)}") 
+        st.error(f"레시피를 불러오는 중 오류가 발생했습니다: {str(e)}") 

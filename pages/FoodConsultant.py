@@ -2,50 +2,50 @@ import streamlit as st
 
 # 영양 데이터베이스 정의
 NUTRITION_DB = {
-    "vegetables": {
+    "채소류": {
         "tips": [
-            "Eat a rainbow of colors for different nutrients",
-            "Steam or roast to preserve nutrients",
-            "Include leafy greens daily"
+            "다양한 색깔의 채소를 섭취하여 여러 영양소를 섭취하세요",
+            "영양소 보존을 위해 찌거나 구워서 조리하세요",
+            "매일 잎채소를 섭취하세요"
         ]
     },
-    "fruits": {
+    "과일류": {
         "tips": [
-            "Eat whole fruits instead of juices",
-            "Choose seasonal fruits for best nutrition",
-            "Pair with protein for balanced blood sugar"
+            "주스보다는 생과일을 섭취하세요",
+            "제철 과일을 선택하여 최상의 영양을 섭취하세요",
+            "혈당 균형을 위해 단백질과 함께 섭취하세요"
         ]
     },
-    "proteins": {
+    "단백질": {
         "tips": [
-            "Include both plant and animal sources",
-            "Choose lean cuts of meat",
-            "Include fish at least twice a week"
+            "식물성과 동물성 단백질을 모두 섭취하세요",
+            "기름기가 적은 육류를 선택하세요",
+            "일주일에 최소 2회 생선을 섭취하세요"
         ]
     },
-    "grains": {
+    "곡물류": {
         "tips": [
-            "Choose whole grains over refined grains",
-            "Look for high fiber content",
-            "Control portion sizes"
+            "정제된 곡물보다 통곡물을 선택하세요",
+            "식이섬유가 풍부한 것을 고르세요",
+            "적절한 양을 조절하세요"
         ]
     }
 }
 
 def show():
-    st.title("💡 Food Consultant")
+    st.title("💡 음식 컨설턴트")
     
     st.write("""
-    ### General Tips:
-    1. Balance your plate with proteins, carbs, and vegetables
-    2. Stay hydrated throughout the day
-    3. Watch portion sizes
-    4. Include a variety of colors in your meals
+    ### 일반적인 조언:
+    1. 단백질, 탄수화물, 채소를 균형있게 섭취하세요
+    2. 하루 종일 수분을 충분히 섭취하세요
+    3. 적절한 양을 조절하세요
+    4. 다양한 색깔의 음식을 식단에 포함하세요
     
-    ### Food-Specific Tips:
+    ### 음식별 조언:
     """)
     
     for food, info in NUTRITION_DB.items():
-        with st.expander(f"Tips for {food.title()}"):
+        with st.expander(f"{food} 관련 조언"):
             for tip in info["tips"]:
                 st.write(f"- {tip}") 

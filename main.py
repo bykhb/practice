@@ -9,25 +9,25 @@ project_root = Path(__file__).parent
 sys.path.append(str(project_root))
 
 PAGES = {
-    "🏠 Home": "Home",
-    "📸 Food Scan": "FoodScan",
-    "🍳 Food Recipe": "FoodRecipe",
-    "💡 Food Consultant": "FoodConsultant",
-    "💬 Share": "Share"
+    "🏠 홈": "Home",
+    "📸 음식 스캔": "FoodScan",
+    "🍳 음식 레시피": "FoodRecipe",
+    "💡 음식 컨설턴트": "FoodConsultant",
+    "💬 공유하기": "Share"
 }
 
 def show_home():
-    st.title("🏠 Food Analyzer Home")
-    st.write("Welcome to the Food Analyzer! Upload food images to get nutritional analysis.")
-    st.write("### Features:")
-    st.write("- 📸 Food Scan")
-    st.write("- 🍳 Food Recipe")
-    st.write("- 💡 Food Consultant")
-    st.write("- 💬 Share")
+    st.title("🏠 음식 분석기 홈")
+    st.write("음식 분석기에 오신 것을 환영합니다! 음식 이미지를 업로드하여 영양 분석을 받아보세요.")
+    st.write("### 주요 기능:")
+    st.write("- 📸 음식 스캔")
+    st.write("- 🍳 음식 레시피")
+    st.write("- 💡 음식 컨설턴트")
+    st.write("- 💬 공유하기")
 
 def main():
     st.set_page_config(
-        page_title="Food Analyzer",
+        page_title="음식 분석기",
         page_icon="🍽️",
         layout="wide",
         initial_sidebar_state="expanded",
@@ -48,11 +48,11 @@ def main():
     """
     st.markdown(hide_pages, unsafe_allow_html=True)
     
-    st.sidebar.title("Navigation")
-    selection = st.sidebar.radio("Go to", list(PAGES.keys()))
+    st.sidebar.title("메뉴")
+    selection = st.sidebar.radio("이동하기", list(PAGES.keys()))
     
     # Home 페이지는 main.py에서 직접 처리
-    if selection == "🏠 Home":
+    if selection == "🏠 홈":
         show_home()
     else:
         try:
@@ -63,12 +63,11 @@ def main():
             st.error(f"Error loading page: {str(e)}")
     
     st.sidebar.divider()
-    st.sidebar.title("About")
+    st.sidebar.title("소개")
     st.sidebar.info(
         """
-        This app helps you analyze food images and track your nutrition.
-        Upload photos of your meals to get instant nutritional information
-        and personalized tips!
+        이 앱은 음식 이미지를 분석하고 영양 정보를 추적하는 데 도움을 줍니다.
+        식사 사진을 업로드하여 즉시 영양 정보와 맞춤형 조언을 받아보세요!
         """
     )
 

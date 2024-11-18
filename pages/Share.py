@@ -1,42 +1,36 @@
 import streamlit as st
 
 def show():
-    st.title("💬 Share")
+    st.title("💬 공유하기")
     
-    # 세션 상태 확인
     if 'history' not in st.session_state or not st.session_state.history:
-        st.info("No analysis history to share. Try analyzing some food images first!")
+        st.info("공유할 분석 기록이 없습니다. 먼저 음식 이미지를 분석해보세요!")
         return
     
     try:    
-        # 가장 최근 분석 결과 선택
         latest_analysis = st.session_state.history[-1]
         
-        st.subheader("Latest Analysis Results")
+        st.subheader("최근 분석 결과")
         
-        # 이미지와 분석 결과 표시
         col1, col2 = st.columns(2)
         
-        # 필수 키들이 있는지 확인
-        required_keys = ["image", "datetime", "detected_foods", "summary"]
-        if not all(key in latest_analysis for key in required_keys):
-            st.error("Some analysis data is missing. Please try analyzing the image again.")
+        if not all(key in latest_analysis for key in ["image", "datetime", "detected_foods", "summary"]):
+            st.error("일부 분석 데이터가 누락되었습니다. 이미지를 다시 분석해주세요.")
             return
             
         with col1:
-            st.image(latest_analysis["image"], caption="Analyzed Food", use_column_width=True)
+            st.image(latest_analysis["image"], caption="분석된 음식", use_column_width=True)
             
         with col2:
-            st.write(f"**Analyzed on:** {latest_analysis['datetime']}")
-            st.write(f"**Detected Food:** {latest_analysis['detected_foods']}")
+            st.write(f"**분석 시간:** {latest_analysis['datetime']}")
+            st.write(f"**감지된 음식:** {latest_analysis['detected_foods']}")
             
             if latest_analysis["summary"]:
-                st.write("**Nutrition Summary:**")
+                st.write("**영양 요약:**")
                 st.write(latest_analysis["summary"])
         
-        # 공유 버튼
-        if st.button("Share Results"):
-            st.success("Results shared successfully! (This is a placeholder message)")
+        if st.button("결과 공유하기"):
+            st.success("결과가 성공적으로 공유되었습니다! (임시 메시지)")
             
     except Exception as e:
-        st.error(f"An error occurred while displaying the results: {str(e)}")
+        st.error(f"결과를 표시하는 중 오류가 발생했습니다: {str(e)}")
