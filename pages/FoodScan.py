@@ -119,6 +119,42 @@ class FoodAnalyzer:
         # Implement summary logic
         return {}
 
+    def parse_detection_result(self, analysis_result):
+        try:
+            detected_items = []
+            lines = analysis_result.split('\n')
+            current_item = {}
+            
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    continue
+                    
+                if line.startswith('1.'):  # 음식 이름
+                    if current_item:
+                        detected_items.append(current_item)
+                    current_item = {'food': line.split('1.')[1].strip()}
+                elif line.startswith('2.'):  # 위치 좌표
+                    try:
+                        coords = line.split('2.')[1].strip()
+                        coords = coords.replace('(', '').replace(')', '')
+                        x1, y1, x2, y2 = map(int, coords.split(','))
+                        current_item['bbox'] = [x1, y1, x2, y2]
+                    except:
+                        current_item['bbox'] = [0, 0, 100, 100]  # 기본값
+                elif line.startswith('3.'):  # 칼로리
+                    current_item['calories'] = line.split('3.')[1].strip()
+                elif line.startswith('4.'):  # 영양성분
+                    current_item['nutrition'] = line.split('4.')[1].strip()
+            
+            if current_item:  # 마지막 아이템 추가
+                detected_items.append(current_item)
+                
+            return detected_items
+        except Exception as e:
+            st.error(f"분석 결과 파싱 중 오류 발생: {str(e)}")
+            return []
+
 def display_results(image, detected_foods, nutrition_info):
     col1, col2 = st.columns([1, 1])
     
