@@ -20,7 +20,7 @@ class FoodAnalyzer:
             width, height = image.size
             
             response = self.client.chat.completions.create(
-                model="gpt-4o",  # 모델명 수정
+                model="gpt-4o-mini",
                 messages=[
                     {
                         "role": "user",
@@ -118,7 +118,7 @@ class FoodAnalyzer:
         for food in foods:
             try:
                 response = self.client.chat.completions.create(
-                    model="gpt-4o",
+                    model="gpt-4o-mini",
                     messages=[
                         {
                             "role": "user",
