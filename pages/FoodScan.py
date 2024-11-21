@@ -63,8 +63,8 @@ class FoodAnalyzer:
                             ]
                         }
                     ],
-                    max_tokens=500,
-                    timeout=60  # 타임아웃 설정 추가
+                    max_tokens=2000,
+                    timeout=120  # 타임아웃 설정 추가
                 )
                 st.write("✅ OpenAI API 호출 완료")
                 
