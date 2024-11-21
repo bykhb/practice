@@ -22,10 +22,10 @@ class FoodAnalyzer:
                 
             # 이미지 준비 과정 로깅
             st.write("🔄 이미지 준비 시작...")
-            img_byte_arr = self.prepare_image(image)
+            img_byte_arr, resized_image = self.prepare_image(image)
             st.write("✅ 이미지 준비 완료")
             
-            width, height = image.size
+            width, height = resized_image.size
             
             try:
                 st.write("🚀 OpenAI API 호출 시작...")
@@ -162,11 +162,18 @@ class FoodAnalyzer:
         import base64
         import io
         
+        # 이미지 크기 조정 (최대 800px)
+        max_size = 800
+        ratio = min(max_size/image.size[0], max_size/image.size[1])
+        if ratio < 1:
+            new_size = (int(image.size[0] * ratio), int(image.size[1] * ratio))
+            image = image.resize(new_size, Image.Resampling.LANCZOS)
+        
         # PIL Image를 바이트로 변환
         buffered = io.BytesIO()
-        image.save(buffered, format="JPEG")
+        image.save(buffered, format="JPEG", quality=85)
         img_str = base64.b64encode(buffered.getvalue()).decode()
-        return img_str
+        return img_str, image  # 리사이즈된 이미지도 반환
 
     def get_nutrition_info(self, foods):
         nutrition_data = {}
@@ -216,30 +223,38 @@ class FoodAnalyzer:
     def parse_detection_result(self, analysis_result):
         try:
             detected_items = []
-            items = analysis_result.split('[음식 ')[1:]  # 첫 번째 빈 요소 제거
+            items = analysis_result.split('[음식 ')[1:]
             
             for item in items:
                 current_item = {}
                 lines = [line.strip() for line in item.split('\n') if line.strip()]
                 
                 for line in lines:
-                    if '음식 이름:' in line:
-                        current_item['food'] = line.split('음식 이름:')[1].strip()
-                    elif '위치:' in line:
-                        coords = [int(x.strip()) for x in line.split('위치:')[1].strip().split(',')]
-                        current_item['bbox'] = coords
-                    elif '칼로리:' in line:
-                        calories = line.split('칼로리:')[1].strip()
-                        current_item['calories'] = calories.replace('kcal', '').strip()
-                    elif '단백질:' in line:
-                        protein = line.split('단백질:')[1].strip()
-                        current_item['protein'] = protein.replace('g', '').strip()
-                    elif '탄수화물:' in line:
-                        carbs = line.split('탄수화물:')[1].strip()
-                        current_item['carbs'] = carbs.replace('g', '').strip()
-                    elif '지방:' in line:
-                        fat = line.split('지방:')[1].strip()
-                        current_item['fat'] = fat.replace('g', '').strip()
+                    try:
+                        if '음식 이름:' in line:
+                            current_item['food'] = line.split('음식 이름:')[1].strip()
+                        elif '위치:' in line:
+                            # 좌표 파싱 개선
+                            coords_str = line.split('위치:')[1].strip()
+                            coords_str = coords_str.replace('[', '').replace(']', '')
+                            coords = [int(float(x.strip())) for x in coords_str.split(',') if x.strip()]
+                            if len(coords) == 4:  # 좌표가 4개인 경우만 저장
+                                current_item['bbox'] = coords
+                        elif '칼로리:' in line:
+                            calories = line.split('칼로리:')[1].strip()
+                            current_item['calories'] = calories.replace('kcal', '').strip()
+                        elif '단백질:' in line:
+                            protein = line.split('단백질:')[1].strip()
+                            current_item['protein'] = protein.replace('g', '').strip()
+                        elif '탄수화물:' in line:
+                            carbs = line.split('탄수화물:')[1].strip()
+                            current_item['carbs'] = carbs.replace('g', '').strip()
+                        elif '지방:' in line:
+                            fat = line.split('지방:')[1].strip()
+                            current_item['fat'] = fat.replace('g', '').strip()
+                    except ValueError as ve:
+                        st.warning(f"값 파싱 오류 (무시하고 계속): {str(ve)}")
+                        continue
                 
                 if 'food' in current_item and 'bbox' in current_item:
                     detected_items.append(current_item)
