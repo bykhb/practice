@@ -33,26 +33,33 @@ class FoodAnalyzer:
                     model="gpt-4o-mini-2024-07-18",
                     messages=[
                         {
+                            "role": "system",
+                            "content": "당신은 음식 이미지 분석 전문가입니다. 이미지의 모든 음식을 정확하게 식별하고 위치와 영양정보를 제공해야 합니다."
+                        },
+                        {
                             "role": "user",
                             "content": [
                                 {
                                     "type": "text",
-                                    "text": f"""이미지에 있는 모든 음식을 찾아서 분석해주세요.
-이미지에 음식이 하나만 있더라도 반드시 분석해주세요.
+                                    "text": f"""다음 형식으로 정확히 응답해주세요:
 
-각 음식에 대해 다음 정보를 제공해주세요:
-1. 음식 이름: [구체적인 음식명]
-2. 위치: 음식이 있는 영역의 좌표값 (x1,y1,x2,y2 형식)
-   - x1,y1: 왼쪽 상단 좌표
-   - x2,y2: 오른쪽 하단 좌표
-   - 이미지 크기는 {width}x{height}px입니다.
-3. 칼로리: 예상 칼로리를 kcal 단위로
-4. 영양성분: 단백질, 탄수화물, 지방을 g 단위로
+[음식 1]
+음식 이름: [구체적인 음식명]
+위치: [x1,y1,x2,y2]
+칼로리: [숫자]kcal
+영양성분:
+- 단백질: [숫자]g
+- 탄수화물: [숫자]g
+- 지방: [숫자]g
+
+[음식 2]
+...
 
 주의사항:
-- 이미지에 음식이 하나만 있는 경우에도 반드시 분석해주세요.
-- 음식이 없는 경우에만 "음식을 찾을 수 없습니다"라고 답변해주세요.
-- 좌표는 이미지 크기 내에서 적절한 값으로 지정해주세요."""
+- 이미지 크기는 {width}x{height}px입니다
+- 모든 음식을 빠짐없이 분석해주세요
+- 정확한 좌표값을 제공해주세요
+- 영양정보는 1인분 기준으로 제공해주세요"""
                                 },
                                 {
                                     "type": "image_url",
@@ -63,8 +70,8 @@ class FoodAnalyzer:
                             ]
                         }
                     ],
-                    max_tokens=2000,
-                    timeout=120  # 타임아웃 설정 추가
+                    max_tokens=4096,
+                    timeout=180  # 3분으로 증가
                 )
                 st.write("✅ OpenAI API 호출 완료")
                 
@@ -208,19 +215,8 @@ class FoodAnalyzer:
 
     def parse_detection_result(self, analysis_result):
         try:
-            st.write("🔍 분석 결과 파싱 시작...")
             detected_items = []
-            
-            # 분석 결과가 비어있는지 확인
-            if not analysis_result or analysis_result.strip() == "":
-                st.error("분석 결과가 비어있습니다.")
-                return []
-            
-            # 전체 분석 결과 로깅
-            st.write("📝 전체 분석 결과:", analysis_result)
-            
-            # 각 음식 항목을 분리
-            items = [item.strip() for item in analysis_result.split('\n\n') if item.strip()]
+            items = analysis_result.split('[음식 ')[1:]  # 첫 번째 빈 요소 제거
             
             for item in items:
                 current_item = {}
@@ -229,31 +225,25 @@ class FoodAnalyzer:
                 for line in lines:
                     if '음식 이름:' in line:
                         current_item['food'] = line.split('음식 이름:')[1].strip()
-                        st.write(f"🍽 음식 발견: {current_item['food']}")
                     elif '위치:' in line:
-                        try:
-                            coords_text = line.split('위치:')[1].strip()
-                            coords = [int(x.strip()) for x in coords_text.replace('(', '').replace(')', '').split(',')]
-                            if len(coords) == 4:
-                                current_item['bbox'] = coords
-                                st.write(f"📍 좌표 확인: {coords}")
-                        except Exception as e:
-                            st.error(f"좌표 파싱 오류: {str(e)}")
-                            continue
+                        coords = [int(x.strip()) for x in line.split('위치:')[1].strip().split(',')]
+                        current_item['bbox'] = coords
                     elif '칼로리:' in line:
-                        current_item['calories'] = line.split('칼로리:')[1].strip()
-                    elif '영양성분:' in line:
-                        current_item['nutrition'] = line.split('영양성분:')[1].strip()
+                        calories = line.split('칼로리:')[1].strip()
+                        current_item['calories'] = calories.replace('kcal', '').strip()
+                    elif '단백질:' in line:
+                        protein = line.split('단백질:')[1].strip()
+                        current_item['protein'] = protein.replace('g', '').strip()
+                    elif '탄수화물:' in line:
+                        carbs = line.split('탄수화물:')[1].strip()
+                        current_item['carbs'] = carbs.replace('g', '').strip()
+                    elif '지방:' in line:
+                        fat = line.split('지방:')[1].strip()
+                        current_item['fat'] = fat.replace('g', '').strip()
                 
-                if 'food' in current_item:
-                    if 'bbox' not in current_item:
-                        # bbox가 없는 경우 기본값 설정
-                        st.warning(f"{current_item['food']}의 좌표가 없어 기본값 사용")
-                        current_item['bbox'] = [0, 0, 100, 100]
+                if 'food' in current_item and 'bbox' in current_item:
                     detected_items.append(current_item)
-                    st.write(f"✅ 아이템 추가됨: {current_item['food']}")
-            
-            st.write(f"📊 총 감지된 아이템 수: {len(detected_items)}")
+
             return detected_items
             
         except Exception as e:
