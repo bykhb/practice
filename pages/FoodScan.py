@@ -322,11 +322,20 @@ def show():
         image = Image.open(uploaded_file)
         
         with st.spinner("음식을 분석하고 있습니다..."):
+            # 이미지 크기 표시 제한
+            display_size = 800
+            ratio = min(display_size/image.size[0], display_size/image.size[1])
+            if ratio < 1:
+                display_size = (int(image.size[0] * ratio), int(image.size[1] * ratio))
+                display_image = image.resize(display_size, Image.Resampling.LANCZOS)
+            else:
+                display_image = image
+            
             detected_foods = analyzer.analyze_image(image)
             nutrition_info = analyzer.get_nutrition_info(detected_foods)
             
             # 바운딩 박스 그리기
-            annotated_image = analyzer.draw_boxes(image, detected_foods)
+            annotated_image = analyzer.draw_boxes(display_image, detected_foods)
             
             # 세션 상태 업데이트
             st.session_state.history.append({
