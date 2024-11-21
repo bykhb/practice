@@ -15,23 +15,29 @@ class FoodAnalyzer:
         
     def analyze_image(self, image):
         try:
+            # API 키 확인
+            if not os.getenv('OPENAI_API_KEY'):
+                st.error("OpenAI API 키가 설정되지 않았습니다.")
+                return []
+                
+            # 이미지 준비 과정 로깅
+            st.debug("이미지 준비 시작...")
             img_byte_arr = self.prepare_image(image)
-        except Exception as e:
-            st.error(f"이미지 준비 중 오류 발생: {str(e)}")
-            return []
-        
-        try:
+            st.debug("이미지 준비 완료")
+            
             width, height = image.size
             
-            response = self.client.chat.completions.create(
-                model="gpt-4o-mini-2024-07-18",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "text",
-                                "text": f"""이미지에 있는 모든 음식을 찾아서 분석해주세요.
+            try:
+                st.debug("OpenAI API 호출 시작...")
+                response = self.client.chat.completions.create(
+                    model="gpt-4o-mini-2024-07-18",
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": f"""이미지에 있는 모든 음식을 찾아서 분석해주세요.
 이미지에 음식이 하나만 있더라도 반드시 분석해주세요.
 
 각 음식에 대해 다음 정보를 제공해주세요:
@@ -47,36 +53,43 @@ class FoodAnalyzer:
 - 이미지에 음식이 하나만 있는 경우에도 반드시 분석해주세요.
 - 음식이 없는 경우에만 "음식을 찾을 수 없습니다"라고 답변해주세요.
 - 좌표는 이미지 크기 내에서 적절한 값으로 지정해주세요."""
-                            },
-                            {
-                                "type": "image_url",
-                                "image_url": {
-                                    "url": f"data:image/jpeg;base64,{img_byte_arr}"
+                                },
+                                {
+                                    "type": "image_url",
+                                    "image_url": {
+                                        "url": f"data:image/jpeg;base64,{img_byte_arr}"
+                                    }
                                 }
-                            }
-                        ]
-                    }
-                ],
-                max_tokens=500
-            )
-        
-            analysis_result = response.choices[0].message.content
-            
-            # 음식을 찾을 수 없는 경우 처리
-            if "음식을 찾을 수 없습니다" in analysis_result:
-                st.warning("이미지에서 음식을 찾을 수 없습니다.")
+                            ]
+                        }
+                    ],
+                    max_tokens=500,
+                    timeout=60  # 타임아웃 설정 추가
+                )
+                st.debug("OpenAI API 호출 완료")
+                
+                # API 응답 확인
+                if not response or not response.choices:
+                    st.error("API 응답이 비어있습니다.")
+                    return []
+                    
+                analysis_result = response.choices[0].message.content
+                st.debug(f"분석 결과: {analysis_result[:100]}...")  # 결과 일부 출력
+                
+            except Exception as api_error:
+                st.error(f"OpenAI API 호출 중 오류 발생: {str(api_error)}")
+                st.error(f"에러 타입: {type(api_error).__name__}")
                 return []
             
+            # 파싱 결과 확인
             detected_items = self.parse_detection_result(analysis_result)
-            
-            # 결과가 비어있는 경우 처리
-            if not detected_items:
-                st.warning("음식 분석에 실패했습니다. 다른 이미지를 시도해보세요.")
+            st.debug(f"감지된 아이템 수: {len(detected_items)}")
             
             return detected_items
             
         except Exception as e:
-            st.error(f"이미지 분석 중 오류 발생: {str(e)}")
+            st.error(f"전체 프로세스 오류: {str(e)}")
+            st.error(f"에러 발생 위치: {e.__traceback__.tb_frame.f_code.co_name}")
             return []
 
     def draw_boxes(self, image, detected_items):
