@@ -21,14 +21,14 @@ class FoodAnalyzer:
                 return []
                 
             # 이미지 준비 과정 로깅
-            st.debug("이미지 준비 시작...")
+            st.write("🔄 이미지 준비 시작...")
             img_byte_arr = self.prepare_image(image)
-            st.debug("이미지 준비 완료")
+            st.write("✅ 이미지 준비 완료")
             
             width, height = image.size
             
             try:
-                st.debug("OpenAI API 호출 시작...")
+                st.write("🚀 OpenAI API 호출 시작...")
                 response = self.client.chat.completions.create(
                     model="gpt-4o-mini-2024-07-18",
                     messages=[
@@ -66,7 +66,7 @@ class FoodAnalyzer:
                     max_tokens=500,
                     timeout=60  # 타임아웃 설정 추가
                 )
-                st.debug("OpenAI API 호출 완료")
+                st.write("✅ OpenAI API 호출 완료")
                 
                 # API 응답 확인
                 if not response or not response.choices:
@@ -74,7 +74,7 @@ class FoodAnalyzer:
                     return []
                     
                 analysis_result = response.choices[0].message.content
-                st.debug(f"분석 결과: {analysis_result[:100]}...")  # 결과 일부 출력
+                st.info(f"분석 결과 (일부): {analysis_result[:100]}...")
                 
             except Exception as api_error:
                 st.error(f"OpenAI API 호출 중 오류 발생: {str(api_error)}")
@@ -83,7 +83,7 @@ class FoodAnalyzer:
             
             # 파싱 결과 확인
             detected_items = self.parse_detection_result(analysis_result)
-            st.debug(f"감지된 아이템 수: {len(detected_items)}")
+            st.write(f"📊 감지된 아이템 수: {len(detected_items)}")
             
             return detected_items
             
