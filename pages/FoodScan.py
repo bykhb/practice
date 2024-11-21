@@ -14,13 +14,17 @@ class FoodAnalyzer:
         self.client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
         
     def analyze_image(self, image):
-        img_byte_arr = self.prepare_image(image)
+        try:
+            img_byte_arr = self.prepare_image(image)
+        except Exception as e:
+            st.error(f"이미지 준비 중 오류 발생: {str(e)}")
+            return []
         
         try:
             width, height = image.size
             
             response = self.client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="gpt-4o-mini-2024-07-18",
                 messages=[
                     {
                         "role": "user",
@@ -118,7 +122,7 @@ class FoodAnalyzer:
         for food in foods:
             try:
                 response = self.client.chat.completions.create(
-                    model="gpt-4o-mini",
+                    model="gpt-4o-mini-2024-07-18",
                     messages=[
                         {
                             "role": "user",
