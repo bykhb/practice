@@ -70,7 +70,6 @@ class FoodAnalyzer:
                             ]
                         }
                     ],
-                    max_tokens=4096,
                     timeout=180  # 3분으로 증가
                 )
                 st.write("✅ OpenAI API 호출 완료")
