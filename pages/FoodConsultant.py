@@ -4,12 +4,12 @@ import re
 import os
 
 # 페이지 설정을 가장 먼저 실행
-st.set_page_config(
-    page_title="Food Consultant",
-    page_icon="🍜",
-    layout="centered",
-    initial_sidebar_state="collapsed"
-)
+# st.set_page_config(
+#     page_title="Food Consultant",
+#     page_icon="🍜",
+#     layout="centered",
+#     initial_sidebar_state="collapsed"
+# )
 
 # 모든 상수와 데이터 구조를 그 다음에 정의
 DAILY_RECOMMENDED_CALORIES = 2000
