@@ -3,7 +3,15 @@ from openai import OpenAI
 import re
 import os
 
-# 모든 상수와 데이터 구조를 먼저 정의
+# 페이지 설정을 가장 먼저 실행
+st.set_page_config(
+    page_title="Food Consultant",
+    page_icon="🍜",
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
+
+# 모든 상수와 데이터 구조를 그 다음에 정의
 DAILY_RECOMMENDED_CALORIES = 2000
 CHARACTERS = ['Gordon (전문적인 조언)', 'Baek (친근한 설명)', 'Morimoto (정교한 분석)']
 FOOD_CATEGORIES = ['한식', '일식', '양식']
@@ -174,14 +182,6 @@ food_info = {
         }
     }
 }
-
-# 페이지 설정
-st.set_page_config(
-    page_title="Food Consultant",
-    page_icon="🍜",
-    layout="centered",
-    initial_sidebar_state="collapsed"
-)
 
 # CSS 스타일
 st.markdown("""
