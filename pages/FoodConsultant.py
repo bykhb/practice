@@ -267,8 +267,8 @@ def show():
         else:
             with st.spinner("AI 분석 중..."):
                 try:
-                    # OpenAI API 호출
-                    client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+                    # OpenAI API 호출                    
+                    client = OpenAI(api_key=api_key)
                     response = client.chat.completions.create(
                         model="gpt-3.5-turbo",
                         messages=[
