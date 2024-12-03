@@ -1,6 +1,7 @@
 import streamlit as st
 from openai import OpenAI
 import re
+import os
 
 # 모든 상수와 데이터 구조를 먼저 정의
 DAILY_RECOMMENDED_CALORIES = 2000
@@ -274,7 +275,7 @@ if st.button("AI 분석 시작"):
         with st.spinner("AI 분석 중..."):
             try:
                 # OpenAI API 호출
-                client = OpenAI(api_key=api_key)
+                client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
                 response = client.chat.completions.create(
                     model="gpt-3.5-turbo",
                     messages=[
