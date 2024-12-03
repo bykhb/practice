@@ -317,3 +317,12 @@ if st.button("AI 분석 시작"):
                     
             except Exception as e:
                 st.error(f"API 호출 중 오류가 발생했습니다: {str(e)}")
+
+def show():
+    st.title("💡 음식 컨설턴트")
+    # 여기에 페이지의 주요 내용을 구현
+    # 기존의 메인 로직을 이 함수 안으로 이동
+
+    # 예시:
+    st.write("음식 컨설턴트 페이지입니다.")
+    # ... 나머지 페이지 구현 코드 ...
