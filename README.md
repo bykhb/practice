@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/ca046755-26fd-4266-985e-52a79cebbf22)# 🍽️ Food Analyzer
+# 🍽️ Food Analyzer
 ![스크린샷 2024-11-19 오전 11 25 28](https://github.com/user-attachments/assets/993e49f2-31a3-443e-81e9-9f400c031194)
 > 음식 스캔 기능
 
