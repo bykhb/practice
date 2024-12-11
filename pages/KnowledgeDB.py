@@ -1,6 +1,11 @@
 import streamlit as st
 import sys
 from pathlib import Path
+import sqlite3
+
+# SQLite3 버전 문제 해결을 위한 코드
+__import__('pysqlite3')
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 # 프로젝트 루트 디렉토리를 Python 경로에 추가
 project_root = Path(__file__).parent.parent
