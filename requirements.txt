@@ -27,3 +27,4 @@ langchain-openai
 langchain-core
 python-dotenv
 beautifulsoup4
+langgraph
