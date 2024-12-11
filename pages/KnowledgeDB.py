@@ -54,4 +54,4 @@ def show():
     # 대화 내용 초기화 버튼을 페이지 본문에 추가
     if st.button("대화 내용 초기화"):
         st.session_state.messages = []
-        st.experimental_rerun() 
+        st.rerun() 
