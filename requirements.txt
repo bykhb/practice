@@ -12,3 +12,10 @@ slack-sdk
 secure-smtplib
 opencv-python-headless
 pandas
+langchain_chroma
+langchain_community
+langchain_openai
+langchain_text_splitters
+langchain_core
+langchain_community
+langchain_core

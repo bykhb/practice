@@ -13,7 +13,8 @@ PAGES = {
     "📸 음식 스캔": "FoodScan",
     "🍳 음식 레시피": "FoodRecipe",
     "💡 음식 컨설턴트": "FoodConsultant",
-    "💬 공유하기": "Share"
+    "💬 공유하기": "Share",
+    "📚 지식DB": "KnowledgeDB"
 }
 
 def show_home():
@@ -24,6 +25,7 @@ def show_home():
     st.write("- 💡 음식 컨설턴트")
     st.write("- 🍳 음식 레시피 추천")
     st.write("- 💬 공유하기")
+    st.write("- 📚 지식DB")
 
 def main():
     st.set_page_config(
