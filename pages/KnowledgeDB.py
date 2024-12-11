@@ -51,8 +51,7 @@ def show():
                 except Exception as e:
                     st.error(f"답변 생성 중 오류가 발생했습니다: {str(e)}")
 
-    # 사이드바에 대화 내용 초기화 버튼만 남김
-    with st.sidebar:
-        if st.button("대화 내용 초기화"):
-            st.session_state.messages = []
-            st.rerun() 
+    # 대화 내용 초기화 버튼을 페이지 본문에 추가
+    if st.button("대화 내용 초기화"):
+        st.session_state.messages = []
+        st.experimental_rerun() 
