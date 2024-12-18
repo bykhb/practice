@@ -31,7 +31,7 @@ PAGES = {
     "📚 외부데이터 수집용": "Bestseller",
     "📚 오픈데이터": "OpenData",
     "💬 공유하기": "Share",
-    "📚 지식DB": "KnowledgeDB"
+    "📚 RAG 지식 DB(예시용)": "KnowledgeDB"
 }
 
 def collect_yes24_bestsellers():
