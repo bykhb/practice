@@ -1,4 +1,5 @@
 import streamlit as st
+from pages.lg_rag import ask_question
 import sys
 from pathlib import Path
 import sqlite3
@@ -10,8 +11,6 @@ sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 # 프로젝트 루트 디렉토리를 Python 경로에 추가
 project_root = Path(__file__).parent.parent
 sys.path.append(str(project_root))
-
-from lg_rag import ask_question
 
 def show():
     st.title("📚 지식 DB")
