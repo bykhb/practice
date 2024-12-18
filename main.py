@@ -36,10 +36,11 @@ def collect_yes24_bestsellers():
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
-        chrome_options.binary_location = "/usr/bin/chromium-browser"
-
+        
+        # ChromeDriverManager를 사용하여 드라이버 설치
+        service = Service(ChromeDriverManager().install())
+        
         with st.spinner('베스트셀러 정보를 수집하고 있습니다...'):
-            service = Service()
             driver = webdriver.Chrome(service=service, options=chrome_options)
             data = []
 
@@ -142,7 +143,7 @@ def show_opendata():
             )
 
             if chart_type == "막대 그래프":
-                fig = px.bar(df, x='식품명', y='칼로리', title='식품별 칼로리 함량')
+                fig = px.bar(df, x='식품명', y='칼로��', title='식품별 칼로리 함량')
                 st.plotly_chart(fig)
             elif chart_type == "선 그래프":
                 fig = px.line(df, x='식품명', y='칼로리', title='식품별 칼로리 함량')

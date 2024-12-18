@@ -28,5 +28,5 @@ langchain-core
 python-dotenv
 beautifulsoup4
 langgraph
-selenium
-webdriver-manager
+selenium==4.10.0
+webdriver-manager==3.8.6
