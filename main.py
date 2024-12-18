@@ -28,7 +28,7 @@ PAGES = {
     "📸 음식 스캔": "FoodScan",
     "🍳 음식 레시피": "FoodRecipe",
     "💡 음식 컨설턴트": "FoodConsultant",
-    "📚 베스트셀러": "Bestseller",
+    "📚 외부데이터 수집용": "Bestseller",
     "📚 오픈데이터": "OpenData",
     "💬 공유하기": "Share",
     "📚 지식DB": "KnowledgeDB"
@@ -93,7 +93,7 @@ def collect_yes24_bestsellers():
         return []
 
 def show_bestsellers():
-    st.title("📚 YES24 베스트셀러")
+    st.title("📚 외부데이터 수집용(YES24 베스트셀러)")
     st.write("현재 YES24의 베스트셀러 목록입니다.")
 
     if st.button("베스트셀러 목록 새로고침"):
