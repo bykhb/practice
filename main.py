@@ -22,6 +22,8 @@ PAGES = {
     "📸 음식 스캔": "FoodScan",
     "🍳 음식 레시피": "FoodRecipe",
     "💡 음식 컨설턴트": "FoodConsultant",
+    "📚 베스트셀러": "Bestseller",
+    "📚 오픈데이터": "OpenData",
     "💬 공유하기": "Share",
     "📚 지식DB": "KnowledgeDB"
 }
