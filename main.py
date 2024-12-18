@@ -14,6 +14,11 @@ import pandas as pd
 import plotly.express as px
 import os
 
+# SQLite3 버전 문제 해결을 위한 코드
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
 # Add the project root directory to Python path
 project_root = Path(__file__).parent
 sys.path.append(str(project_root))
