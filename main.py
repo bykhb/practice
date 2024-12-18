@@ -34,7 +34,6 @@ PAGES = {
     "📚 지식DB": "KnowledgeDB"
 }
 
-
 def collect_yes24_bestsellers():
     try:
         chrome_options = Options()
