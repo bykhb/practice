@@ -109,7 +109,6 @@ def show_opendata():
     st.title("📊 공공데이터 분석")
     st.write("식품 관련 공공데이터를 분석하고 시각화합니다.")
 
-    # 데이터 로드 (예시 - 실제 데이터 경로로 수정 필요)
     try:
         # 여러 데이터 소스 선택 옵션
         data_source = st.selectbox(
@@ -138,14 +137,14 @@ def show_opendata():
             if chart_type == "막대 그래프":
                 fig = px.bar(df, x='식품명', y='칼로리', title='식품별 칼로리 함량')
                 st.plotly_chart(fig)
-
             elif chart_type == "선 그래프":
                 fig = px.line(df, x='식품명', y='칼로리', title='식품별 칼로리 함량')
                 st.plotly_chart(fig)
-
             elif chart_type == "산점도":
                 fig = px.scatter(df, x='당류', y='단백질', title='당류와 단백질 관계')
                 st.plotly_chart(fig)
+    except Exception as e:
+        st.error(f"데이터 처리 중 오류가 발생했습니다: {str(e)}")
 
 def main():
     st.set_page_config(
@@ -192,7 +191,7 @@ def main():
     st.sidebar.info(
         """
         이 서비스는 음식 이미지를 분석하고 영양 정보를 추적하는 것에 도움을 줍니다.
-        식사 사진을 업로드��여 즉시 영양 정보와 맞춤형 조언을 받아보세요!
+        식사 사진을 업로드하여 즉시 영양 정보와 맞춤형 조언을 받아보세요!
         """
     )
 
