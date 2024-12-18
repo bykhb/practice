@@ -14,13 +14,23 @@ load_dotenv()
 # Chroma DB 경로 설정
 PERSIST_DIRECTORY = Path(__file__).parent.parent / "chroma"
 
+# 디버깅을 위한 코드 추가
+print(f"Looking for Chroma DB at: {PERSIST_DIRECTORY}")
+print(f"Directory exists: {PERSIST_DIRECTORY.exists()}")
+if PERSIST_DIRECTORY.exists():
+    print(f"Contents: {list(PERSIST_DIRECTORY.glob('*'))}")
+
 # 저장된 벡터 스토어 로드
-vectorstore = Chroma(
-    collection_name="baseball-chroma",
-    embedding_function=OpenAIEmbeddings(),
-    persist_directory=str(PERSIST_DIRECTORY),
-)
-retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+try:
+    vectorstore = Chroma(
+        collection_name="baseball-chroma",
+        embedding_function=OpenAIEmbeddings(),
+        persist_directory=str(PERSIST_DIRECTORY),
+    )
+    retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+except Exception as e:
+    print(f"Error loading vector store: {e}")
+    raise
 
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], operator.add]
@@ -54,7 +64,7 @@ def generate_answer(state: AgentState) -> dict:
 2. 컨텍스트에 없는 내용은 "제가 가진 정보로는 답변하기 어렵습니다"라고 말씀해주세요
 3. 답변은 친절하고 자연스러운 한국어로 작성해주세요
 
-���텍스트:
+텍스트:
 {context}
 """),
         ("human", "{query}")
