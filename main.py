@@ -3,6 +3,15 @@ import streamlit as st
 import importlib
 import sys
 from pathlib import Path
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
+import pandas as pd
+import plotly.express as px
 
 # Add the project root directory to Python path
 project_root = Path(__file__).parent
@@ -183,7 +192,7 @@ def main():
     st.sidebar.info(
         """
         이 서비스는 음식 이미지를 분석하고 영양 정보를 추적하는 것에 도움을 줍니다.
-        식사 사진을 업로드하여 즉시 영양 정보와 맞춤형 조언을 받아보세요!
+        식사 사진을 업로드��여 즉시 영양 정보와 맞춤형 조언을 받아보세요!
         """
     )
 
