@@ -30,52 +30,57 @@ PAGES = {
 
 
 def collect_yes24_bestsellers():
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--disable-gpu")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--window-size=1920,1080")
+    try:
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.binary_location = "/usr/bin/chromium-browser"
 
-    with st.spinner('베스트셀러 정보를 수집하고 있습니다...'):
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
-        data = []
+        with st.spinner('베스트셀러 정보를 수집하고 있습니다...'):
+            service = Service()
+            driver = webdriver.Chrome(service=service, options=chrome_options)
+            data = []
 
-        try:
-            base_url = "https://www.yes24.com"
-            url = f"{base_url}/Product/Category/BestSeller?CategoryNumber=001&sumgb=06"
-            driver.get(url)
+            try:
+                base_url = "https://www.yes24.com"
+                url = f"{base_url}/Product/Category/BestSeller?CategoryNumber=001&sumgb=06"
+                driver.get(url)
 
-            wait = WebDriverWait(driver, 10)
-            wait.until(EC.presence_of_element_located((By.CLASS_NAME, "item_info")))
+                wait = WebDriverWait(driver, 10)
+                wait.until(EC.presence_of_element_located((By.CLASS_NAME, "item_info")))
 
-            items = driver.find_elements(By.CLASS_NAME, "item_info")
+                items = driver.find_elements(By.CLASS_NAME, "item_info")
 
-            for item in items:
-                try:
-                    title_elem = item.find_element(By.CSS_SELECTOR, ".info_name .gd_name")
-                    title = title_elem.text.strip()
-                    link = title_elem.get_attribute("href")
-                    if link.startswith('/'):
-                        link = base_url + link
-                    
-                    author = item.find_element(By.CSS_SELECTOR, ".info_pubGrp .info_auth a").text.strip()
-                    price = item.find_element(By.CSS_SELECTOR, ".info_price .txt_num .yes_b").text.strip()
+                for item in items:
+                    try:
+                        title_elem = item.find_element(By.CSS_SELECTOR, ".info_name .gd_name")
+                        title = title_elem.text.strip()
+                        link = title_elem.get_attribute("href")
+                        if link.startswith('/'):
+                            link = base_url + link
+                        
+                        author = item.find_element(By.CSS_SELECTOR, ".info_pubGrp .info_auth a").text.strip()
+                        price = item.find_element(By.CSS_SELECTOR, ".info_price .txt_num .yes_b").text.strip()
 
-                    data.append({
-                        "title": title,
-                        "author": author,
-                        "price": price,
-                        "link": link
-                    })
-                except Exception as e:
-                    continue
+                        data.append({
+                            "title": title,
+                            "author": author,
+                            "price": price,
+                            "link": link
+                        })
+                    except Exception as e:
+                        continue
 
-        except Exception as e:
-            st.error(f"데이터 수집 중 오류가 발생했습니다: {e}")
-        finally:
-            driver.quit()
+            finally:
+                driver.quit()
 
-        return data
+            return data
+
+    except Exception as e:
+        st.error(f"데이터 수집 중 오류가 발생했습니다: {str(e)}")
+        return []
 
 def show_bestsellers():
     st.title("📚 YES24 베스트셀러")
