@@ -28,3 +28,5 @@ langchain-core
 python-dotenv
 beautifulsoup4
 langgraph
+selenium
+webdriver-manager
