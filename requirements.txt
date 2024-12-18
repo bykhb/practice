@@ -17,7 +17,7 @@ langchain_openai
 langchain_text_splitters
 langchain_core
 pysqlite3-binary
-chromadb
+chromadb==0.3.29
 langchain-community
 langchain-openai
 langchain-core
@@ -26,3 +26,5 @@ beautifulsoup4
 langgraph
 selenium
 webdriver-manager
+pysqlite3-binary
+sentence-transformers
